@@ -2,7 +2,6 @@ package ui
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/log"
 	"github.com/michael-duren/tui-chat/internal/logging"
 	"github.com/michael-duren/tui-chat/ui/controllers"
 	"github.com/michael-duren/tui-chat/ui/models"
@@ -16,8 +15,8 @@ const (
 )
 
 type Model struct {
-	Logger      *log.Logger
 	CurrentView CurrentView
+	*models.AppModel
 
 	// Page Models
 	Home *models.HomeModel
@@ -25,10 +24,10 @@ type Model struct {
 
 func InitialModel() Model {
 	logger := logging.NewLogger("client")
+	appModel := models.NewAppModel(logger)
 	homeModel := models.NewHomeModel()
 	return Model{
-		// TODO: Add page models here
-		Logger:      logger,
+		AppModel:    appModel,
 		CurrentView: Home,
 		Home:        homeModel,
 	}
@@ -40,7 +39,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	_, cmd := controllers.Base(m, msg)
+	_, cmd := controllers.Base(*m.AppModel, msg)
 	if cmd != nil {
 		return m, cmd
 	}
@@ -55,13 +54,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	// header
-	s := "TUI CHAT\n"
+	header := "TUI CHAT\n"
 
+	var body string
 	switch m.CurrentView {
 	case Home:
-		s += views.Home(m.Home, m.Logger)
+		body = views.Home(m.Home, m.Logger)
 	}
 
-	s += "\nTUI CHAT BY MICHAEL DUREN"
-	return s
+	footer := "\nTUI CHAT BY MICHAEL DUREN"
+	return views.Layout(header, body, footer)
 }
