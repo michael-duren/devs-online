@@ -2,8 +2,20 @@ package controllers
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michael-duren/tui-chat/ui/models"
 )
 
-func Home(m tea.Model, msg tea.Msg) (tea.Model, tea.Cmd) {
+func Home(m models.AppModel, msg tea.Msg) (models.AppModel, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		// These keys should exit the program.
+		case "s", "Enter":
+			m.Logger.Debug("In case")
+			m.CurrentView = models.Login
+			return m, nil
+		}
+	}
+
 	return m, nil
 }

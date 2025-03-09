@@ -17,6 +17,10 @@ func Base(m models.AppModel, msg tea.Msg) (models.AppModel, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
+	switch m.CurrentView {
+	case models.Home:
+		return Home(m, msg)
+	}
 
 	return m, nil
 }

@@ -8,28 +8,15 @@ import (
 	"github.com/michael-duren/tui-chat/ui/views"
 )
 
-type CurrentView string
-
-const (
-	Home CurrentView = "/home"
-)
-
 type Model struct {
-	CurrentView CurrentView
 	*models.AppModel
-
-	// Page Models
-	Home *models.HomeModel
 }
 
 func InitialModel() Model {
 	logger := logging.NewLogger("client")
 	appModel := models.NewAppModel(logger)
-	homeModel := models.NewHomeModel()
 	return Model{
-		AppModel:    appModel,
-		CurrentView: Home,
-		Home:        homeModel,
+		AppModel: appModel,
 	}
 }
 
@@ -44,20 +31,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	switch m.CurrentView {
-	case Home:
-		return controllers.Home(m, msg)
-	}
-
 	return m, nil
 }
 
 func (m Model) View() string {
-	var body string
-	switch m.CurrentView {
-	case Home:
-		body = views.Home(m.Home, m.Logger)
-	}
-
-	return views.Layout(m.AppModel, body)
+	return views.Layout(m.AppModel)
 }

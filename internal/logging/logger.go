@@ -35,7 +35,7 @@ func NewLogger(project ProjectName) *log.Logger {
 	}
 
 	logger := log.NewWithOptions(logFile, log.Options{
-		Level:           log.InfoLevel,
+		Level:           log.DebugLevel,
 		ReportTimestamp: true,
 		ReportCaller:    true,
 	})

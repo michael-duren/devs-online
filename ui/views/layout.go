@@ -5,61 +5,43 @@ import (
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
-const (
-	Gray        = "#7E8294"
-	Gray_alt    = "#4C566A"
-	Background  = "#000"
-	Red         = "#EC7279"
-	Yellow      = "#ECBE7B"
-	Orange      = "#DA8548"
-	Green       = "#A0C980"
-	Cyan        = "#4DB5BD"
-	Dark_cyan   = "#5699AF"
-	Blue        = "#6CB6EB"
-	Violet      = "#A9A1E1"
-	Purple      = "#D38AEA"
-	Light_blue  = "#ADD8E6"
-	Light_pink  = "#D8BFD8"
-	Disabled    = "#676E95"
-	Diff_red    = "#FB4934"
-	Diff_green  = "#8EC07C"
-	Diff_blue   = "#458588"
-	Diff_yellow = "#FABD2F"
-	White       = "#FFF"
-)
-
-func Layout(appModel *models.AppModel, body string) string {
-	background := lipgloss.Color(Background)
-
+func Layout(m *models.AppModel) string {
 	headerStyle := lipgloss.NewStyle().
-		Bold(true).
-		Background(background).
-		Foreground(lipgloss.Color(Violet)).
+		Background(Background).
+		Foreground(Violet).
 		Padding(1).
-		Width(appModel.Width)
+		Width(m.Width)
 	header := headerStyle.Render("TUI CHAT")
 
 	bodyStyle := lipgloss.NewStyle().
-		Background(background).
-		Foreground(lipgloss.Color(Gray)).
+		Bold(true).
+		Background(Background).
+		Foreground(Gray).
 		Padding(1).
-		Width(appModel.Width).
-		Height(appModel.Height - 6)
+		Width(m.Width).
+		Height(m.Height - 6)
 
 	footerStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color(Cyan)).
-		Background(background).
+		Foreground(Cyan).
+		Background(Background).
 		Padding(1).
-		Width(appModel.Width)
+		Width(m.Width)
 	footer := footerStyle.Render("TUI CHAT BY MICHAEL DUREN")
 
-	appModel.BodyDimensions.Height = appModel.Height - 6
-	appModel.BodyDimensions.Width = appModel.Width - 2
+	m.BodyDimensions.Height = m.Height - 9
+	m.BodyDimensions.Width = m.Width - 2
+
+	var body string
+	switch m.CurrentView {
+	case models.Home:
+		body = Home(m, m.Home)
+	case models.Login:
+		body = Login()
+	}
 
 	return lipgloss.Place(
-		appModel.Width,
-		appModel.Height,
+		m.Width,
+		m.Height,
 		lipgloss.Center,
 		lipgloss.Center,
 
