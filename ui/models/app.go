@@ -10,12 +10,17 @@ type WindowDemnsions struct {
 type AppModel struct {
 	Logger *log.Logger
 	*WindowDemnsions
+	BodyDimensions *WindowDemnsions
 }
 
 func NewAppModel(logger *log.Logger) *AppModel {
 	return &AppModel{
 		Logger: logger,
 		WindowDemnsions: &WindowDemnsions{
+			Width:  0,
+			Height: 0,
+		},
+		BodyDimensions: &WindowDemnsions{
 			Width:  0,
 			Height: 0,
 		},

@@ -53,15 +53,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	// header
-	header := "TUI CHAT\n"
-
 	var body string
 	switch m.CurrentView {
 	case Home:
 		body = views.Home(m.Home, m.Logger)
 	}
 
-	footer := "\nTUI CHAT BY MICHAEL DUREN"
-	return views.Layout(header, body, footer)
+	return views.Layout(m.AppModel, body)
 }
