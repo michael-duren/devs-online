@@ -1,16 +1,16 @@
-build-server:
-	@echo "Building Server..."
-	@go build -o main cmd/server/main.go
-
-build-client: 
-	@echo "Building Client..."
-	@go build -o main cmd/client/main.go
+build:
+	@echo "Building CLI..."
+	@go build -o main cmd/clie/main.go
 
 # Run just the API
-run-server:
-	@go run cmd/server/main.go
+serve:
+	@go run cmd/cli/main.go serve
+
+# Run just the API
+serve-ext:
+	@go run cmd/cli/main.go serve --external
 
 # Run just the frontend
-run-client:
-	@go run cmd/client/main.go
+chat:
+	@go run cmd/cli/main.go chat
 
