@@ -26,7 +26,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	_, cmd := controllers.Base(*m.AppModel, msg)
+	_, cmd := controllers.Base(m.AppModel, msg)
 	if cmd != nil {
 		return m, cmd
 	}

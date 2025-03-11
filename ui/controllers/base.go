@@ -5,7 +5,7 @@ import (
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
-func Base(m models.AppModel, msg tea.Msg) (models.AppModel, tea.Cmd) {
+func Base(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Width = msg.Width

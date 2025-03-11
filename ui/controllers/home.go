@@ -5,15 +5,16 @@ import (
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
-func Home(m models.AppModel, msg tea.Msg) (models.AppModel, tea.Cmd) {
+func Home(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		// These keys should exit the program.
-		case "s", "Enter":
+		case "s", "enter":
 			m.Logger.Debug("In case")
 			m.CurrentView = models.Login
 			return m, nil
+		default:
+			m.Logger.Infof("In default : %v\n", msg)
 		}
 	}
 
