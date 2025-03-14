@@ -21,7 +21,6 @@ func InitialModel() Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	// Just return `nil`, which means "no I/O right now, please."
 	return nil
 }
 

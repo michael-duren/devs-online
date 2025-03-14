@@ -20,11 +20,13 @@ type AppModel struct {
 	BodyDimensions *WindowDemnsions
 	CurrentView    CurrentView
 	// Page Models
-	Home *HomeModel
+	Home  *HomeModel
+	Login *LoginModel
 }
 
 func NewAppModel(logger *log.Logger) *AppModel {
 	homeModel := NewHomeModel()
+	loginModel := NewLoginModel()
 	return &AppModel{
 		Logger: logger,
 		WindowDemnsions: &WindowDemnsions{
@@ -37,5 +39,6 @@ func NewAppModel(logger *log.Logger) *AppModel {
 		},
 		CurrentView: Home,
 		Home:        homeModel,
+		Login:       loginModel,
 	}
 }
