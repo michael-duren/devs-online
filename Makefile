@@ -2,7 +2,7 @@ build:
 	@echo "Building CLI..."
 	@go build -o main cmd/clie/main.go
 
-# Run just the API
+# Run the websocket server
 serve:
 	@go run cmd/cli/main.go serve
 
