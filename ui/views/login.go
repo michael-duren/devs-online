@@ -21,7 +21,7 @@ func Login(m *models.AppModel) string {
 		// if m.Login.Form.GetString("address") != "" {
 		// 	addr = "Address: " + m.Login.Form.GetString("address")
 		v := strings.TrimSuffix(m.Login.Form.View(), "\n\n")
-		form := lipgloss.NewStyle().Margin(1, 0).Background(Blue).Render(v)
+		form := lipgloss.NewStyle().Margin(1, 0).Render(v)
 		m.Logger.Info("value of form", v)
 		// errors := m.Login.Form.Errors()
 		//
