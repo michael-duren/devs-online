@@ -7,7 +7,7 @@ import (
 
 func Layout(m *models.AppModel) string {
 	headerStyle := lipgloss.NewStyle().
-		Background(Background).
+		// Background(Background).
 		Foreground(Violet).
 		Padding(1).
 		Width(m.Width)
@@ -15,7 +15,7 @@ func Layout(m *models.AppModel) string {
 
 	bodyStyle := lipgloss.NewStyle().
 		Bold(true).
-		Background(Background).
+		// Background(Background).
 		Foreground(Gray).
 		Padding(1).
 		Width(m.Width).
@@ -23,7 +23,7 @@ func Layout(m *models.AppModel) string {
 
 	footerStyle := lipgloss.NewStyle().
 		Foreground(Cyan).
-		Background(Background).
+		// Background(Background).
 		Padding(1).
 		Width(m.Width)
 	footer := footerStyle.Render("TUI CHAT BY MICHAEL DUREN")
@@ -34,9 +34,9 @@ func Layout(m *models.AppModel) string {
 	var body string
 	switch m.CurrentView {
 	case models.Home:
-		body = Home(m, m.Home)
+		body = Home(m)
 	case models.Login:
-		body = Login()
+		body = Login(m)
 	}
 
 	return lipgloss.Place(
