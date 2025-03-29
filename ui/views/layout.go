@@ -37,6 +37,10 @@ func Layout(m *models.AppModel) string {
 		body = Home(m)
 	case models.Login:
 		body = Login(m)
+	case models.Loading:
+		body = Loading(m)
+	case models.Chat:
+		body = Chat(m)
 	}
 
 	return lipgloss.Place(

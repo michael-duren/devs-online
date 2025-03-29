@@ -28,8 +28,8 @@ func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 
 	if m.Login.Form.State == huh.StateCompleted {
 		// TODO: Update with actual logic
+		m.Logger.Info("in state completed")
 		m.CurrentView = models.Loading
-		cmds = append(cmds, tea.Quit)
 	}
 
 	return m, tea.Batch(cmds...)
