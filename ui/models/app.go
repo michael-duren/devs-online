@@ -10,8 +10,10 @@ type WindowDemnsions struct {
 type CurrentView string
 
 const (
-	Home  CurrentView = "/home"
-	Login CurrentView = "/login"
+	Home    CurrentView = "/home"
+	Login   CurrentView = "/login"
+	Loading CurrentView = "/loading"
+	Chat    CurrentView = "/chat"
 )
 
 type AppModel struct {
@@ -20,13 +22,17 @@ type AppModel struct {
 	BodyDimensions *WindowDemnsions
 	CurrentView    CurrentView
 	// Page Models
-	Home  *HomeModel
-	Login *LoginModel
+	Home    *HomeModel
+	Login   *LoginModel
+	Loading *LoadingModel
+	Chat    *ChatModel
 }
 
 func NewAppModel(logger *log.Logger) *AppModel {
 	homeModel := NewHomeModel()
 	loginModel := NewLoginModel()
+	loadingModel := NewLoadingModel()
+	chatModel := NewChatModel()
 	return &AppModel{
 		Logger: logger,
 		WindowDemnsions: &WindowDemnsions{
@@ -40,5 +46,7 @@ func NewAppModel(logger *log.Logger) *AppModel {
 		CurrentView: Home,
 		Home:        homeModel,
 		Login:       loginModel,
+		Loading:     loadingModel,
+		Chat:        chatModel,
 	}
 }

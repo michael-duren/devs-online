@@ -22,6 +22,8 @@ func Base(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 		return Home(m, msg)
 	case models.Login:
 		return Login(m, msg)
+	case models.Loading:
+		return Loading(m, msg)
 	}
 
 	return m, nil

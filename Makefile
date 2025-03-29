@@ -1,6 +1,6 @@
 build:
 	@echo "Building CLI..."
-	@go build -o main cmd/clie/main.go
+	@go build -o main cmd/cli/main.go
 
 # Run the websocket server
 serve:
