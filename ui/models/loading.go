@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/charmbracelet/bubbles/spinner"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -16,4 +17,8 @@ func NewLoadingModel() *LoadingModel {
 	return &LoadingModel{
 		Spinner: s,
 	}
+}
+
+func (m *LoadingModel) Init() tea.Cmd {
+	return m.Spinner.Tick
 }

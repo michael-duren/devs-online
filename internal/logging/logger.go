@@ -17,7 +17,8 @@ const (
 )
 
 func NewLogger(project ProjectName) *log.Logger {
-	logFileName := fmt.Sprintf("%d_%02d_%02d_log.txt", time.Now().Year(), time.Now().Month(), time.Now().Day())
+	now := time.Now()
+	logFileName := fmt.Sprintf("%d_%02d_%02d_log.txt", now.Year(), now.Month(), now.Day())
 
 	logDir := filepath.Join("logs", string(project))
 	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {

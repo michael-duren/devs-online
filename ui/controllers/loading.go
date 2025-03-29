@@ -9,6 +9,8 @@ func Loading(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "q", "ctrl+c":
+			return m, tea.Quit
 		default:
 			m.Logger.Infof("In default : %v\n", msg)
 		}
