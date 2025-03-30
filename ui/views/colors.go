@@ -14,7 +14,7 @@ const (
 	Dark_cyan   = lipgloss.Color("#5699AF")
 	Blue        = lipgloss.Color("#6CB6EB")
 	Violet      = lipgloss.Color("#A9A1E1")
-	Purple      = lipgloss.Color("#D38AEA")
+	Purple      = lipgloss.Color("#7571F9")
 	Light_blue  = lipgloss.Color("#ADD8E6")
 	Light_pink  = lipgloss.Color("#D8BFD8")
 	Disabled    = lipgloss.Color("#676E95")

@@ -7,7 +7,7 @@ import (
 
 func Layout(m *models.AppModel) string {
 	headerStyle := lipgloss.NewStyle().
-		// Background(Background).
+		Bold(true).
 		Foreground(Violet).
 		Padding(1).
 		Width(m.Width)
@@ -15,7 +15,6 @@ func Layout(m *models.AppModel) string {
 
 	bodyStyle := lipgloss.NewStyle().
 		Bold(true).
-		// Background(Background).
 		Foreground(Gray).
 		Padding(1).
 		Width(m.Width).
@@ -23,7 +22,7 @@ func Layout(m *models.AppModel) string {
 
 	footerStyle := lipgloss.NewStyle().
 		Foreground(Cyan).
-		// Background(Background).
+		Bold(true).
 		Padding(1).
 		Width(m.Width)
 	footer := footerStyle.Render("TUI CHAT BY MICHAEL DUREN")

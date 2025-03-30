@@ -25,7 +25,7 @@ const welcomeMessage = `
      /^^       /^^         /^^^^^    /^^    /^^^^     /^^/^^^^^^^^  
     `
 
-const getStarted = "Press 's' or 'Enter' to get started"
+const getStarted = "\nPress 's' or 'Enter' to get started"
 
 func Home(m *models.AppModel) string {
 	homeModel := m.Home
@@ -35,13 +35,12 @@ func Home(m *models.AppModel) string {
 
 	m.Logger.Info("height: ", m.BodyDimensions.Height)
 	welcomeStyle := lipgloss.NewStyle().
-		// Background(Background).
-		Foreground(Cyan)
+		Foreground(Purple).
+		Bold(true)
+
 	getStartedStyle := lipgloss.NewStyle().
-		// Background(Background).
 		Foreground(Violet).
-		Bold(true).
-		BorderStyle(lipgloss.DoubleBorder())
+		Bold(true)
 
 	return lipgloss.Place(
 		m.BodyDimensions.Width,
