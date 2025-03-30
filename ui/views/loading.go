@@ -20,11 +20,17 @@ func Loading(m *models.AppModel) string {
 	textStyle := lipgloss.NewStyle().
 		Foreground(Gray)
 
-	content := lipgloss.JoinVertical(
+	content := lipgloss.Place(
+		m.BodyDimensions.Width,
+		m.BodyDimensions.Height,
 		lipgloss.Center,
-		spinnerStyle.Render(loadingModel.Spinner.View()),
-		textStyle.Render("Loading..."),
-		textStyle.Render("Press 'q' to quit"),
+		lipgloss.Center,
+		lipgloss.JoinVertical(
+			lipgloss.Center,
+			spinnerStyle.Render(loadingModel.Spinner.View()),
+			textStyle.Render("\n"),
+			textStyle.Render("Loading..."),
+		),
 	)
 
 	return style.Render(content)
