@@ -59,14 +59,17 @@ func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 	}
 
 	if m.Login.Form.State == huh.StateCompleted {
-		// TODO: Update with actual logic
-		m.Logger.Info("in state completed")
 		url := "https://swapi.dev/api/people/11"
 		m.Logger.Infof("Form values - Address: %s, Username: %s, Secret: %s",
 			m.Login.Address,
 			m.Login.Username,
 			m.Login.Secret)
 		m.CurrentView = models.Loading
+		m.Chat.Credentials = models.NewCredentials(
+			m.Login.Address,
+			m.Login.Username,
+			m.Login.Secret,
+		)
 		return m, tea.Batch(m.Loading.Init(), makeDummyRequest(url, m.Logger))
 	}
 

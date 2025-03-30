@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michael-duren/tui-chat/ui/models"
 )
@@ -11,7 +13,13 @@ func Chat(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyEnter:
 			if m.Chat.Input.Value() != "" {
-				m.Chat.Messages = append(m.Chat.Messages, m.Chat.Input.Value())
+				m.Chat.Messages = append(
+					m.Chat.Messages,
+					fmt.Sprintf(
+						"%s: %s",
+						m.Chat.Credentials.Username,
+						m.Chat.Input.Value()),
+				)
 				m.Chat.Input.Reset()
 			}
 		case tea.KeyCtrlC:

@@ -8,8 +8,10 @@ import (
 
 type ChatModel struct {
 	Response *messages.DummyResponse
-	Messages []string
-	Input    textinput.Model
+	// TODO: Create msg struct that contains username, other details
+	Messages    []string
+	Input       textinput.Model
+	Credentials *Credentials
 }
 
 func NewChatModel() *ChatModel {
