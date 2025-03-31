@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
+	"github.com/michael-duren/tui-chat/internal/lib"
 )
 
 type LoginModel struct {
@@ -30,6 +31,12 @@ func NewLoginModel() *LoginModel {
 					if s == "" {
 						return errors.New("please enter the ip address you wish to connect to")
 					}
+
+					_, err := lib.IsValidIP(s)
+					if err != nil {
+						return err
+					}
+
 					return nil
 				},
 				),
