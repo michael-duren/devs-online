@@ -18,10 +18,6 @@ func Login(m *models.AppModel) string {
 	default:
 		v := strings.TrimSuffix(m.Login.Form.View(), "\n\n")
 		form := lipgloss.NewStyle().Margin(1, 0).Render(v)
-		m.Logger.Info("value of form", v)
-		// errors := m.Login.Form.Errors()
-		//
-		// lipgloss.NewStyle().Padding(1, 4, 0, 1).Render(form)
 
 		return lipgloss.Place(
 			m.BodyDimensions.Width,
