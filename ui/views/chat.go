@@ -1,7 +1,9 @@
 package views
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michael-duren/tui-chat/ui/models"
@@ -22,11 +24,19 @@ func Chat(m *models.AppModel) string {
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(Violet)
 
-	messageHeight := m.BodyDimensions.Height - 8 // Leave space for input
+	messageHeight := m.BodyDimensions.Height - 8
 	inputHeight := 3
 
 	var messages []string
-	messages = append(messages, chatModel.Messages...)
+	for _, msg := range chatModel.Messages {
+		s := fmt.Sprintf(
+			"%s (%s): %s",
+			msg.Username,
+			msg.Date.Format(time.Kitchen),
+			msg.Message,
+		)
+		messages = append(messages, s)
+	}
 	messageContent := strings.Join(messages, "\n")
 	if messageContent == "" {
 		messageContent = "No messages yet..."

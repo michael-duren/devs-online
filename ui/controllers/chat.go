@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"fmt"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michael-duren/tui-chat/ui/models"
@@ -15,10 +15,11 @@ func Chat(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 			if m.Chat.Input.Value() != "" {
 				m.Chat.Messages = append(
 					m.Chat.Messages,
-					fmt.Sprintf(
-						"%s: %s",
+					models.NewChatMessage(
+						time.Now(),
+						m.Chat.Input.Value(),
 						m.Chat.Credentials.Username,
-						m.Chat.Input.Value()),
+					),
 				)
 				m.Chat.Input.Reset()
 			}
