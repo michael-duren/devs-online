@@ -39,17 +39,6 @@ func makeDummyRequest(url string, logger *log.Logger) tea.Cmd {
 }
 
 func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "s", "enter":
-			m.Logger.Debug("In case")
-			return m, nil
-		default:
-			m.Logger.Infof("In default : %v\n", msg)
-		}
-	}
-
 	var cmds []tea.Cmd
 
 	form, cmd := m.Login.Form.Update(msg)
