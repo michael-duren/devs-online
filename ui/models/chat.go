@@ -8,6 +8,11 @@ import (
 	"github.com/michael-duren/tui-chat/ui/messages"
 )
 
+type Participant struct {
+	Username string
+	Online   bool
+}
+
 type ChatMessage struct {
 	Date     time.Time
 	Message  string
@@ -23,10 +28,11 @@ func NewChatMessage(date time.Time, msg, username string) *ChatMessage {
 }
 
 type ChatModel struct {
-	Response    *messages.DummyResponse
-	Messages    []*ChatMessage
-	Input       textinput.Model
-	Credentials *Credentials
+	Response     *messages.DummyResponse
+	Messages     []*ChatMessage
+	Input        textinput.Model
+	Credentials  *Credentials
+	Participants []Participant
 }
 
 func NewChatModel() *ChatModel {
@@ -35,10 +41,18 @@ func NewChatModel() *ChatModel {
 	ti.Focus()
 
 	return &ChatModel{
-		Response: nil,
-		Messages: make([]*ChatMessage, 0),
-		Input:    ti,
+		Response:     nil,
+		Messages:     make([]*ChatMessage, 0),
+		Input:        ti,
+		Participants: []Participant{},
 	}
+}
+
+func (m *ChatModel) AddParticipant(username string, online bool) {
+	m.Participants = append(m.Participants, Participant{
+		Username: username,
+		Online:   online,
+	})
 }
 
 func (m *ChatModel) Init() tea.Cmd {

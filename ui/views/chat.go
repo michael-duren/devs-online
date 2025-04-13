@@ -12,6 +12,10 @@ import (
 func Chat(m *models.AppModel) string {
 	chatModel := m.Chat
 
+	sidebar := Sidebar(m)
+	sidebarWidth := 38
+
+	chatWidth := m.BodyDimensions.Width - sidebarWidth - 2
 	messageStyle := lipgloss.NewStyle().
 		Foreground(Gray).
 		Padding(1).
@@ -22,9 +26,9 @@ func Chat(m *models.AppModel) string {
 		Foreground(Cyan).
 		Padding(1).
 		BorderStyle(lipgloss.RoundedBorder()).
-		BorderForeground(Violet)
+		BorderForeground(Purple)
 
-	messageHeight := m.BodyDimensions.Height - 8
+	messageHeight := m.BodyDimensions.Height - 7
 	inputHeight := 3
 
 	var messages []string
@@ -44,17 +48,23 @@ func Chat(m *models.AppModel) string {
 
 	messageArea := messageStyle.
 		Height(messageHeight).
-		Width(m.BodyDimensions.Width - 2).
+		Width(chatWidth).
 		Render(messageContent)
 
 	inputArea := inputStyle.
 		Height(inputHeight).
-		Width(m.BodyDimensions.Width - 2).
+		Width(chatWidth).
 		Render(chatModel.Input.View())
 
-	return lipgloss.JoinVertical(
+	chatArea := lipgloss.JoinVertical(
 		lipgloss.Top,
 		messageArea,
 		inputArea,
+	)
+
+	return lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		sidebar,
+		chatArea,
 	)
 }
