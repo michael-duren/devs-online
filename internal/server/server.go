@@ -10,6 +10,7 @@ import (
 )
 
 type Server struct {
+	logger *log.Logger
 	Server *http.Server
 	hub    *Hub
 }
@@ -27,6 +28,11 @@ func (s *Server) serveWs(w http.ResponseWriter, r *http.Request) {
 		send: make(chan []byte, 256),
 	}
 	client.hub.register <- client
+
+	// allow collection of memroy referenced by the caller by doing all work in
+	// new go routiness
+	go client.readPump()
+	go client.writePump()
 }
 
 func (s *Server) ShutdownSockets() {
@@ -53,10 +59,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return mux
 }
 
-func NewServer(port int) *Server {
+func NewServer(port int, logger *log.Logger) *Server {
 	Hub := newHub()
 	NewServer := &Server{
-		hub: Hub,
+		logger: logger,
+		hub:    Hub,
 	}
 	// hub manages the different connections and broadcasting
 	go NewServer.hub.Run()

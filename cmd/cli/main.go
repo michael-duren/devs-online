@@ -40,7 +40,7 @@ func runServe(external bool, addr string, port int) {
 		logger.Info("serving on external port")
 	}
 
-	server := server.NewServer(port)
+	server := server.NewServer(port, logger)
 	done := make(chan bool, 1)
 	go gracefulShutdown(server, done)
 	err := server.Server.ListenAndServe()
