@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func gracefulShutdown(apiServer *http.Server, done chan bool) {
+func gracefulShutdown(server *server.Server, done chan bool) {
 	// listen from interrupt signal from os
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
@@ -29,10 +29,14 @@ func gracefulShutdown(apiServer *http.Server, done chan bool) {
 	// wait for interrupt
 	<-ctx.Done()
 
+	// send signal to stop
+	server.Hub.Stop <- struct{}{}
+
 	// set 5 second context for server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := apiServer.Shutdown(ctx); err != nil {
+
+	if err := server.Server.Shutdown(ctx); err != nil {
 		log.Printf("Server forced to shutdown with error: %v", err)
 	}
 	log.Print("Server exiting")
@@ -50,7 +54,7 @@ func runServe(external bool, addr string, port int) {
 	server := server.NewServer(port)
 	done := make(chan bool, 1)
 	go gracefulShutdown(server, done)
-	err := server.ListenAndServe()
+	err := server.Server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		panic(fmt.Sprintf("http server error: %v:", err))
 	}
