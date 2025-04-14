@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,10 +11,35 @@ import (
 
 type Server struct {
 	Server *http.Server
-	Hub    *Hub
+	hub    *Hub
 }
 
-func serveWs(w http.ResponseWriter, r *http.Request) {
+func (s *Server) serveWs(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Errorf("error upgrading request: %v", err)
+		return
+	}
+
+	client := &Client{
+		hub:  s.hub,
+		conn: conn,
+		send: make(chan []byte, 256),
+	}
+	client.hub.register <- client
+}
+
+func (s *Server) ShutdownSockets() {
+	// send signal to stop
+	s.hub.Stop <- struct{}{}
+	// set 5 second context for server
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := s.Server.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown with error: %v", err)
+	}
+	log.Print("Server exiting")
 }
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -22,7 +48,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// register route
 	mux.HandleFunc("/health", s.healthHandler)
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(w, r)
+		s.serveWs(w, r)
 	})
 	return mux
 }
@@ -30,10 +56,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 func NewServer(port int) *Server {
 	Hub := newHub()
 	NewServer := &Server{
-		Hub: Hub,
+		hub: Hub,
 	}
 	// hub manages the different connections and broadcasting
-	go NewServer.Hub.Run()
+	go NewServer.hub.Run()
 
 	// Declare Server config
 	server := &http.Server{

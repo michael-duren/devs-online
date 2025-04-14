@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
@@ -29,17 +28,7 @@ func gracefulShutdown(server *server.Server, done chan bool) {
 	// wait for interrupt
 	<-ctx.Done()
 
-	// send signal to stop
-	server.Hub.Stop <- struct{}{}
-
-	// set 5 second context for server
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := server.Server.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown with error: %v", err)
-	}
-	log.Print("Server exiting")
+	server.ShutdownSockets()
 
 	done <- true
 }
