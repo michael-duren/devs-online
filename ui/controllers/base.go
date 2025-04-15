@@ -18,13 +18,13 @@ func Base(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 		}
 	}
 	switch m.CurrentView {
-	case models.Home:
+	case models.HomePath:
 		return Home(m, msg)
-	case models.Login:
+	case models.LoginPath:
 		return Login(m, msg)
-	case models.Loading:
+	case models.LoadingPath:
 		return Loading(m, msg)
-	case models.Chat:
+	case models.ChatPath:
 		return Chat(m, msg)
 	}
 

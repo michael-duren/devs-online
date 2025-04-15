@@ -11,17 +11,16 @@ func Loading(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 	case LoginResult:
 		if msg.conn == nil || msg.err != nil || msg.username == nil {
 			log.Warn("error logging into chat: ", "error: ", msg.err)
-			m.CurrentView = models.Login
+			m.CurrentView = models.LoginPath
 			return m, nil
 		}
 
 		m.Chat.Conn = msg.conn
 		m.Chat.Username = *msg.username
+		m.CurrentView = models.ChatPath
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "ctrl+c":
-			return m, tea.Quit
 		default:
 			m.Logger.Infof("In default : %v\n", msg)
 		}

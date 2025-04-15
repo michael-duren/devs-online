@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
+	"github.com/michael-duren/tui-chat/messages"
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
@@ -26,10 +27,10 @@ func newLoginResult(conn *websocket.Conn, username *string, err error) *LoginRes
 	}
 }
 
-func connectToChat(creds *models.Credentials) tea.Cmd {
+func connectToChat(creds *messages.Credentials) tea.Cmd {
 	return func() tea.Msg {
 		u := url.URL{Scheme: "ws", Host: creds.Address, Path: "/ws"}
-		credStr, err := json.Marshal(*models.NewCredentialDto(creds.Username, creds.Secret))
+		credStr, err := json.Marshal(*messages.NewCredentialDto(creds.Username, creds.Secret))
 		authHeader := http.Header{}
 		authHeader.Set("Authorization", string(credStr))
 		if err != nil {
@@ -69,8 +70,8 @@ func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 			m.Login.Address,
 			m.Login.Username,
 			m.Login.Secret)
-		m.CurrentView = models.Loading
-		creds := models.NewCredentials(
+		m.CurrentView = models.LoadingPath
+		creds := messages.NewCredentials(
 			m.Login.Address,
 			m.Login.Username,
 			m.Login.Secret,

@@ -1,4 +1,4 @@
-package models
+package messages
 
 // what is sent to the /ws endpoint
 // to login to the chat room

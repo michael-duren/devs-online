@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/michael-duren/tui-chat/ui/models"
+	"github.com/michael-duren/tui-chat/messages"
 )
 
 type Server struct {
@@ -58,7 +58,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// register route
 	mux.HandleFunc("/health", s.healthHandler)
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		var creds models.Credentials
+		var creds messages.Credentials
 
 		err := json.NewDecoder(r.Body).Decode(&creds)
 		if err != nil {

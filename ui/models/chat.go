@@ -1,37 +1,17 @@
 package models
 
 import (
-	"time"
-
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gorilla/websocket"
+	"github.com/michael-duren/tui-chat/messages"
 )
 
-type Participant struct {
-	Username string
-	Online   bool
-}
-
-type ChatMessage struct {
-	Date     time.Time
-	Message  string
-	Username string
-}
-
-func NewChatMessage(date time.Time, msg, username string) *ChatMessage {
-	return &ChatMessage{
-		Date:     date,
-		Message:  msg,
-		Username: username,
-	}
-}
-
 type ChatModel struct {
-	Messages     []*ChatMessage
+	Messages     []*messages.ChatMessage
 	Input        textinput.Model
 	Username     string
-	Participants []Participant
+	Participants []messages.Participant
 	Conn         *websocket.Conn
 }
 
@@ -41,14 +21,14 @@ func NewChatModel() *ChatModel {
 	ti.Focus()
 
 	return &ChatModel{
-		Messages:     make([]*ChatMessage, 0),
+		Messages:     make([]*messages.ChatMessage, 0),
 		Input:        ti,
-		Participants: []Participant{},
+		Participants: []messages.Participant{},
 	}
 }
 
 func (m *ChatModel) AddParticipant(username string, online bool) {
-	m.Participants = append(m.Participants, Participant{
+	m.Participants = append(m.Participants, messages.Participant{
 		Username: username,
 		Online:   online,
 	})

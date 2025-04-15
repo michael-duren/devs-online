@@ -10,10 +10,10 @@ type WindowDemnsions struct {
 type CurrentView string
 
 const (
-	Home    CurrentView = "/home"
-	Login   CurrentView = "/login"
-	Loading CurrentView = "/loading"
-	Chat    CurrentView = "/chat"
+	HomePath    CurrentView = "/home"
+	LoginPath   CurrentView = "/login"
+	LoadingPath CurrentView = "/loading"
+	ChatPath    CurrentView = "/chat"
 )
 
 type AppModel struct {
@@ -43,7 +43,7 @@ func NewAppModel(logger *log.Logger) *AppModel {
 			Width:  0,
 			Height: 0,
 		},
-		CurrentView: Home,
+		CurrentView: HomePath,
 		Home:        homeModel,
 		Login:       loginModel,
 		Loading:     loadingModel,

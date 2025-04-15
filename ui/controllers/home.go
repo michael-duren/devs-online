@@ -11,7 +11,7 @@ func Home(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 		switch msg.String() {
 		case "s", "enter":
 			m.Logger.Debug("In case")
-			m.CurrentView = models.Login
+			m.CurrentView = models.LoginPath
 			return m, nil
 		default:
 			m.Logger.Infof("In default : %v\n", msg)

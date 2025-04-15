@@ -4,6 +4,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michael-duren/tui-chat/messages"
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
@@ -15,7 +16,7 @@ func Chat(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 			if m.Chat.Input.Value() != "" {
 				m.Chat.Messages = append(
 					m.Chat.Messages,
-					models.NewChatMessage(
+					messages.NewChatMessage(
 						time.Now(),
 						m.Chat.Input.Value(),
 						m.Chat.Username,

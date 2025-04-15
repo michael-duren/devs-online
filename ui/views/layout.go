@@ -32,13 +32,13 @@ func Layout(m *models.AppModel) string {
 
 	var body string
 	switch m.CurrentView {
-	case models.Home:
+	case models.HomePath:
 		body = Home(m)
-	case models.Login:
+	case models.LoginPath:
 		body = Login(m)
-	case models.Loading:
+	case models.LoadingPath:
 		body = Loading(m)
-	case models.Chat:
+	case models.ChatPath:
 		body = Chat(m)
 	}
 
