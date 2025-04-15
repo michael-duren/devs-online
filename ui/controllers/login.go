@@ -82,29 +82,3 @@ func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 
 	return m, tea.Batch(cmds...)
 }
-
-/* func makeDummyRequest(url string, logger *log.Logger) tea.Cmd {
-	return func() tea.Msg {
-		c := &http.Client{Timeout: 5 * time.Second}
-		res, err := c.Get(url)
-		if err != nil {
-			logger.Errorf("error response: %v", err)
-			return messages.DummyResponse{Err: err}
-		}
-
-		defer func() { _ = res.Body.Close() }()
-
-		bodyBytes, err := io.ReadAll(res.Body)
-		if err != nil {
-			logger.Error("error reading response body: ", err)
-			return messages.DummyResponse{Err: err}
-		}
-
-		payload := string(bodyBytes)
-		return messages.DummyResponse{
-			StatusCode: res.StatusCode,
-			Message:    &payload,
-			Err:        nil,
-		}
-	}
-} */
