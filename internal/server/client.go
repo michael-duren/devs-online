@@ -35,6 +35,9 @@ type Client struct {
 	// websocket conn
 	conn *websocket.Conn
 
+	// user info
+	username string
+
 	// buffered cchannel of outbound messages
 	send chan []byte
 }

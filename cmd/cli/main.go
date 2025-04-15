@@ -33,14 +33,15 @@ func gracefulShutdown(server *server.Server, done chan bool) {
 	done <- true
 }
 
-func runServe(external bool, addr string, port int) {
+func runServe(external bool, addr string, port int, secret string) {
 	logger := logging.NewLogger("server")
 	logger.Info("sever address: ", addr)
 	if external {
+		// TODO: Figure out
 		logger.Info("serving on external port")
 	}
 
-	server := server.NewServer(port, logger)
+	server := server.NewServer(port, logger, secret)
 	done := make(chan bool, 1)
 	go gracefulShutdown(server, done)
 	err := server.Server.ListenAndServe()
@@ -71,17 +72,19 @@ func main() {
 	var external bool
 	var port int
 	var addr string
+	var secret string
 	serveCmd := &cobra.Command{
 		Use:   "serve",
 		Short: "Start the t-chat server",
 		Run: func(cmd *cobra.Command, args []string) {
 			log.Infof("starting server, serving external: %t", external)
-			runServe(external, addr, port)
+			runServe(external, addr, port, secret)
 		},
 	}
 	serveCmd.Flags().BoolVar(&external, "external", false, "Enable external access")
 	serveCmd.Flags().StringVar(&addr, "address", "", "Specifies the host address")
 	serveCmd.Flags().IntVar(&port, "port", 8080, "Specifies the port")
+	serveCmd.Flags().StringVar(&secret, "chat secret", "", "Specifies the secret to get into the chat")
 
 	chatCmd := &cobra.Command{
 		Use:   "chat",

@@ -2,20 +2,23 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/michael-duren/tui-chat/ui/models"
 )
 
 type Server struct {
 	logger *log.Logger
 	Server *http.Server
 	hub    *Hub
+	secret string
 }
 
-func (s *Server) serveWs(w http.ResponseWriter, r *http.Request) {
+func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Errorf("error upgrading request: %v", err)
@@ -23,9 +26,10 @@ func (s *Server) serveWs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		hub:  s.hub,
-		conn: conn,
-		send: make(chan []byte, 256),
+		hub:      s.hub,
+		conn:     conn,
+		send:     make(chan []byte, 256),
+		username: username,
 	}
 	client.hub.register <- client
 
@@ -54,16 +58,31 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// register route
 	mux.HandleFunc("/health", s.healthHandler)
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		s.serveWs(w, r)
+		var creds models.Credentials
+
+		err := json.NewDecoder(r.Body).Decode(&creds)
+		if err != nil {
+			w.WriteHeader(400)
+			log.Info("incorrect format for creds sent to server")
+			return
+		}
+
+		if creds.Secret != s.secret {
+			w.WriteHeader(401)
+			return
+		}
+
+		s.serveWs(w, r, creds.Username)
 	})
 	return mux
 }
 
-func NewServer(port int, logger *log.Logger) *Server {
+func NewServer(port int, logger *log.Logger, secret string) *Server {
 	Hub := newHub()
 	NewServer := &Server{
 		logger: logger,
 		hub:    Hub,
+		secret: secret,
 	}
 	// hub manages the different connections and broadcasting
 	go NewServer.hub.Run()
