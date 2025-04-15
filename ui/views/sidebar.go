@@ -35,7 +35,7 @@ func Sidebar(m *models.AppModel) string {
 		}
 
 		participantLine := fmt.Sprintf("%s %s", status, participant.Username)
-		if participant.Username == m.Chat.Credentials.Username {
+		if participant.Username == m.Chat.Username {
 			participantLine += " (you)"
 		}
 

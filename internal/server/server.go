@@ -63,7 +63,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&creds)
 		if err != nil {
 			w.WriteHeader(400)
-			log.Info("incorrect format for creds sent to server")
+			log.Info("incorrect format for creds sent to server ", "error: ", err)
 			return
 		}
 

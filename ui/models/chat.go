@@ -5,7 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michael-duren/tui-chat/ui/messages"
+	"github.com/gorilla/websocket"
 )
 
 type Participant struct {
@@ -28,11 +28,11 @@ func NewChatMessage(date time.Time, msg, username string) *ChatMessage {
 }
 
 type ChatModel struct {
-	Response     *messages.DummyResponse
 	Messages     []*ChatMessage
 	Input        textinput.Model
-	Credentials  *Credentials
+	Username     string
 	Participants []Participant
+	Conn         *websocket.Conn
 }
 
 func NewChatModel() *ChatModel {
@@ -41,7 +41,6 @@ func NewChatModel() *ChatModel {
 	ti.Focus()
 
 	return &ChatModel{
-		Response:     nil,
 		Messages:     make([]*ChatMessage, 0),
 		Input:        ti,
 		Participants: []Participant{},

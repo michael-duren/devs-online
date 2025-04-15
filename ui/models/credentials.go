@@ -15,3 +15,15 @@ func NewCredentials(address, username, secret string) *Credentials {
 		Secret:   secret,
 	}
 }
+
+type CredentialDto struct {
+	Username string `json:"username"`
+	Secret   string `json:"secret"`
+}
+
+func NewCredentialDto(username, secret string) *CredentialDto {
+	return &CredentialDto{
+		Username: username,
+		Secret:   secret,
+	}
+}

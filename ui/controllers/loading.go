@@ -2,15 +2,21 @@ package controllers
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michael-duren/tui-chat/ui/messages"
+	"github.com/charmbracelet/log"
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
 func Loading(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 	switch msg := msg.(type) {
-	case messages.DummyResponse:
-		m.CurrentView = models.Chat
-		m.Chat.Response = &msg
+	case LoginResult:
+		if msg.conn == nil || msg.err != nil || msg.username == nil {
+			log.Warn("error logging into chat: ", "error: ", msg.err)
+			m.CurrentView = models.Login
+			return m, nil
+		}
+
+		m.Chat.Conn = msg.conn
+		m.Chat.Username = *msg.username
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {

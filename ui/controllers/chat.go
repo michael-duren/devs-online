@@ -18,7 +18,7 @@ func Chat(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 					models.NewChatMessage(
 						time.Now(),
 						m.Chat.Input.Value(),
-						m.Chat.Credentials.Username,
+						m.Chat.Username,
 					),
 				)
 				m.Chat.Input.Reset()

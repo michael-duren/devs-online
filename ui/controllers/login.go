@@ -1,18 +1,89 @@
 package controllers
 
 import (
-	"io"
+	"encoding/json"
 	"net/http"
-	"time"
+	"net/url"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
-	"github.com/michael-duren/tui-chat/ui/messages"
+	"github.com/gorilla/websocket"
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
-func makeDummyRequest(url string, logger *log.Logger) tea.Cmd {
+type LoginResult struct {
+	conn     *websocket.Conn
+	username *string
+	err      error
+}
+
+func newLoginResult(conn *websocket.Conn, username *string, err error) *LoginResult {
+	return &LoginResult{
+		conn:     conn,
+		username: username,
+		err:      err,
+	}
+}
+
+func connectToChat(creds *models.Credentials) tea.Cmd {
+	return func() tea.Msg {
+		u := url.URL{Scheme: "ws", Host: creds.Address, Path: "/ws"}
+		credStr, err := json.Marshal(*models.NewCredentialDto(creds.Username, creds.Secret))
+		authHeader := http.Header{}
+		authHeader.Set("Authorization", string(credStr))
+		if err != nil {
+			return newLoginResult(
+				nil,
+				nil,
+				err,
+			)
+		}
+
+		c, res, err := websocket.DefaultDialer.Dial(u.String(), authHeader)
+		if err != nil {
+			log.Info("unable to connect with websocket. res: %v", res)
+			// TODO: check response for reason of not being successful
+			return newLoginResult(
+				nil,
+				nil,
+				err,
+			)
+		}
+
+		return newLoginResult(c, &creds.Username, nil)
+	}
+}
+
+func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
+	var cmds []tea.Cmd
+
+	form, cmd := m.Login.Form.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		m.Login.Form = f
+		cmds = append(cmds, cmd)
+	}
+
+	if m.Login.Form.State == huh.StateCompleted {
+		m.Logger.Infof("Form values - Address: %s, Username: %s, Secret: %s",
+			m.Login.Address,
+			m.Login.Username,
+			m.Login.Secret)
+		m.CurrentView = models.Loading
+		creds := models.NewCredentials(
+			m.Login.Address,
+			m.Login.Username,
+			m.Login.Secret,
+		)
+		m.Chat.Username = creds.Username
+
+		return m, tea.Batch(m.Loading.Init(), connectToChat(creds))
+	}
+
+	return m, tea.Batch(cmds...)
+}
+
+/* func makeDummyRequest(url string, logger *log.Logger) tea.Cmd {
 	return func() tea.Msg {
 		c := &http.Client{Timeout: 5 * time.Second}
 		res, err := c.Get(url)
@@ -36,31 +107,4 @@ func makeDummyRequest(url string, logger *log.Logger) tea.Cmd {
 			Err:        nil,
 		}
 	}
-}
-
-func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
-	var cmds []tea.Cmd
-
-	form, cmd := m.Login.Form.Update(msg)
-	if f, ok := form.(*huh.Form); ok {
-		m.Login.Form = f
-		cmds = append(cmds, cmd)
-	}
-
-	if m.Login.Form.State == huh.StateCompleted {
-		url := "https://swapi.dev/api/people/11"
-		m.Logger.Infof("Form values - Address: %s, Username: %s, Secret: %s",
-			m.Login.Address,
-			m.Login.Username,
-			m.Login.Secret)
-		m.CurrentView = models.Loading
-		m.Chat.Credentials = models.NewCredentials(
-			m.Login.Address,
-			m.Login.Username,
-			m.Login.Secret,
-		)
-		return m, tea.Batch(m.Loading.Init(), makeDummyRequest(url, m.Logger))
-	}
-
-	return m, tea.Batch(cmds...)
-}
+} */
