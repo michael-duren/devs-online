@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,20 +35,29 @@ func gracefulShutdown(server *server.Server, done chan bool) {
 
 func runServe(external bool, addr string, port int, secret string) {
 	logger := logging.NewLogger("server")
-	logger.Info("sever address: ", addr)
-	if external {
-		// TODO: Figure out
-		logger.Info("serving on external port")
-	}
 
-	server := server.NewServer(port, logger, secret)
+	if external {
+		addr = "0.0.0.0"
+
+		localIP, err := getLocalIP()
+		if err != nil {
+			logger.Warn("Could not determine local IP address", "error", err)
+		} else {
+			logger.Info(fmt.Sprintf("Your machine's IP address is: %s", localIP))
+			logger.Info(fmt.Sprintf("Others can connect using: %s:%d", localIP, port))
+		}
+	}
+	log.Infof("external: %v, addr: %v", external, addr)
+	logger.Info("server address: ", addr)
+	logger.Info(fmt.Sprintf("server will be available at http://%s:%d", addr, port))
+
+	server := server.NewServer(port, logger, secret, addr)
 	done := make(chan bool, 1)
 	go gracefulShutdown(server, done)
 	err := server.Server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		panic(fmt.Sprintf("http server error: %v:", err))
 	}
-
 	<-done
 	log.Print("Graceful shutdown complete.")
 }
@@ -81,9 +91,9 @@ func main() {
 		},
 	}
 	serveCmd.Flags().BoolVar(&external, "external", false, "Enable external access")
-	serveCmd.Flags().StringVar(&addr, "address", "", "Specifies the host address")
+	serveCmd.Flags().StringVar(&addr, "address", "127.0.0.1", "Specifies the host address")
 	serveCmd.Flags().IntVar(&port, "port", 8080, "Specifies the port")
-	serveCmd.Flags().StringVar(&secret, "chat secret", "", "Specifies the secret to get into the chat")
+	serveCmd.Flags().StringVar(&secret, "chat secret", "secret", "Specifies the secret to get into the chat")
 
 	chatCmd := &cobra.Command{
 		Use:   "chat",
@@ -100,4 +110,19 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func getLocalIP() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String(), nil
+			}
+		}
+	}
+	return "", fmt.Errorf("no non-loopback IPv4 address found")
 }

@@ -22,37 +22,6 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string, chatRoom *ChatRoom) {
-// 	conn, err := upgrader.Upgrade(w, r, nil)
-// 	if err != nil {
-// 		log.Errorf("error upgrading request: %v", err)
-// 		return
-// 	}
-// 	client := &Client{username: username, conn: conn}
-// 	chatRoom.register <- client
-// 	go func() {
-// 		defer func() {
-// 			chatRoom.unregister <- conn
-// 			_ = conn.Close()
-// 		}()
-// 		for {
-// 			var msg messages.Message
-// 			log.Infof("Waiting to read message from client")
-// 			if err := conn.ReadJSON(&msg); err != nil {
-// 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-// 					log.Warnf("Unexpected close error: %v", err)
-// 				} else {
-// 					log.Warnf("Read error: %v", err)
-// 				}
-// 				break
-// 			}
-// 			log.Infof("RECEIVED CLIENT MESSAGE: Type=%v, Content=%v, Sender=%v",
-// 				msg.Type, msg.Content, msg.Sender)
-// 			chatRoom.broadcast <- msg
-// 		}
-// 	}()
-// }
-
 func (s *Server) ShutdownSockets() {
 	// set 5 second context for server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -74,7 +43,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		secret := r.URL.Query().Get("secret")
 
 		// TODO: Add logic to put in some secret
-		if secret != "secret" {
+		if secret != s.secret {
 			w.WriteHeader(401)
 			return
 		}
@@ -84,18 +53,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return mux
 }
 
-func NewServer(port int, logger *log.Logger, secret string) *Server {
+func NewServer(port int, logger *log.Logger, secret string, addr string) *Server {
 	NewServer := &Server{
 		logger:   logger,
 		ChatRoom: NewChatRoom(),
 		secret:   secret,
 	}
-	// run the chat room
-	go NewServer.ChatRoom.Run()
 
-	// Declare Server config
+	go NewServer.ChatRoom.Run()
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", port),
+		Addr:         fmt.Sprintf("%s:%d", addr, port),
 		Handler:      NewServer.RegisterRoutes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
@@ -103,7 +70,6 @@ func NewServer(port int, logger *log.Logger, secret string) *Server {
 	}
 	NewServer.Server = server
 	log.Infof("creating server that listens on %s\n", server.Addr)
-
 	return NewServer
 }
 
