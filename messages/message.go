@@ -3,15 +3,22 @@ package messages
 import "time"
 
 const (
-	ChatMessageType MessageType = "chat"
-	InitType        MessageType = "init"
-	UserAlertType   MessageType = "user_alert"
+	ChatMessageType  MessageType = "chat"
+	InitMessageType  MessageType = "init"
+	LeaveMessageType MessageType = "leave"
+	JoinMessageType  MessageType = "join"
 )
 
 type MessageType string
 
-type Message interface {
-	Type() MessageType
+// Message
+// A wrapper for sending different types of
+// messages between peers
+type Message struct {
+	Type    MessageType `json:"type"`
+	Content any         `json:"content"`
+	Sender  string      `json:"sender,omitempty"`
+	Time    time.Time   `json:"time"`
 }
 
 // Participant
@@ -24,22 +31,21 @@ type Participant struct {
 // The chat message sent by the server
 // or client
 type ChatMessage struct {
-	Date        time.Time
-	Message     string
-	Username    string
-	messageType MessageType
+	Date     time.Time
+	Message  string
+	Username string
 }
 
-func (c *ChatMessage) Type() MessageType {
-	return c.messageType
-}
-
-func NewChatMessage(date time.Time, msg, username string) *ChatMessage {
-	return &ChatMessage{
-		Date:        date,
-		Message:     msg,
-		Username:    username,
-		messageType: ChatMessageType,
+func NewChatMessage(date time.Time, msg, username string) *Message {
+	return &Message{
+		Type: ChatMessageType,
+		Content: ChatMessage{
+			Date:     date,
+			Message:  msg,
+			Username: username,
+		},
+		Sender: username,
+		Time:   time.Now(),
 	}
 }
 
@@ -50,13 +56,41 @@ type InitMessage struct {
 	Participants []Participant
 }
 
-// UserAction - Used if a user leaves the chat
-type UserAction struct {
-	Participant Participant
+func NewInitMessage(ch []ChatMessage, p []Participant) *Message {
+	return &Message{
+		Type: InitMessageType,
+		Content: &InitMessage{
+			ChatHistory:  ch,
+			Participants: p,
+		},
+		Time: time.Now(),
+	}
 }
 
-//
-// type Message[T any] struct {
-// 	MessageType MessageType
-// 	Payload     T
-// }
+type LeaveMessage struct {
+	Username string `json:"username"`
+}
+
+func NewLeaveMessage(username string) *Message {
+	return &Message{
+		Type: LeaveMessageType,
+		Content: &LeaveMessage{
+			Username: username,
+		},
+		Time: time.Now(),
+	}
+}
+
+type JoinMessage struct {
+	Username string `json:"username"`
+}
+
+func NewJoinMessage(username string) *Message {
+	return &Message{
+		Type: LeaveMessageType,
+		Content: &JoinMessage{
+			Username: username,
+		},
+		Time: time.Now(),
+	}
+}
