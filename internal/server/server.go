@@ -2,46 +2,58 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/gorilla/websocket"
 	"github.com/michael-duren/tui-chat/messages"
 )
 
 type Server struct {
-	logger *log.Logger
-	Server *http.Server
-	hub    *Hub
-	secret string
+	logger   *log.Logger
+	Server   *http.Server
+	ChatRoom *ChatRoom
+	secret   string
 }
 
-func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string) {
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string, chatRoom *ChatRoom) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Errorf("error upgrading request: %v", err)
 		return
 	}
 
-	client := &Client{
-		hub:      s.hub,
-		conn:     conn,
-		send:     make(chan []byte, 256),
-		username: username,
-	}
-	client.hub.register <- client
+	client := &Client{username: username, conn: conn}
+	chatRoom.register <- client
 
-	// allow collection of memroy referenced by the caller by doing all work in
-	// new go routiness
-	go client.readPump()
-	go client.writePump()
+	go func() {
+		defer func() {
+			chatRoom.unregister <- conn
+			_ = conn.Close()
+		}()
+
+		for {
+			var msg messages.Message
+			if err := conn.ReadJSON(&msg); err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Warn("error: %v", err)
+				}
+				break
+			}
+
+			chatRoom.broadcast <- msg
+		}
+	}()
 }
 
 func (s *Server) ShutdownSockets() {
-	// send signal to stop
-	s.hub.Stop <- struct{}{}
 	// set 5 second context for server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -58,34 +70,28 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// register route
 	mux.HandleFunc("/health", s.healthHandler)
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		var creds messages.Credentials
+		username := r.URL.Query().Get("username")
+		secret := r.URL.Query().Get("secret")
 
-		err := json.NewDecoder(r.Body).Decode(&creds)
-		if err != nil {
-			w.WriteHeader(400)
-			log.Info("incorrect format for creds sent to server ", "error: ", err)
-			return
-		}
-
-		if creds.Secret != s.secret {
+		// TODO: Add logic to put in some secret
+		if secret != "some-secret" {
 			w.WriteHeader(401)
 			return
 		}
 
-		s.serveWs(w, r, creds.Username)
+		s.serveWs(w, r, username, s.ChatRoom)
 	})
 	return mux
 }
 
 func NewServer(port int, logger *log.Logger, secret string) *Server {
-	Hub := newHub()
 	NewServer := &Server{
-		logger: logger,
-		hub:    Hub,
-		secret: secret,
+		logger:   logger,
+		ChatRoom: NewChatRoom(),
+		secret:   secret,
 	}
-	// hub manages the different connections and broadcasting
-	go NewServer.hub.Run()
+	// run the chat room
+	go NewServer.ChatRoom.Run()
 
 	// Declare Server config
 	server := &http.Server{

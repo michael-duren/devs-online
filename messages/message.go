@@ -52,11 +52,11 @@ func NewChatMessage(date time.Time, msg, username string) *Message {
 // InitMessage - The message the server
 // should send to the client when entering the chat
 type InitMessage struct {
-	ChatHistory  []ChatMessage
+	ChatHistory  []Message
 	Participants []Participant
 }
 
-func NewInitMessage(ch []ChatMessage, p []Participant) *Message {
+func NewInitMessage(ch []Message, p []Participant) *Message {
 	return &Message{
 		Type: InitMessageType,
 		Content: &InitMessage{
