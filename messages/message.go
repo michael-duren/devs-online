@@ -138,7 +138,7 @@ func NewJoinMessage(username string) *Message {
 	}
 
 	return &Message{
-		Type:    LeaveMessageType,
+		Type:    JoinMessageType,
 		Content: string(encoded),
 		Time:    time.Now(),
 	}

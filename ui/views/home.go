@@ -26,7 +26,6 @@ func Home(m *models.AppModel) string {
 		return fmt.Sprintf("Welcome %s to TUI CHAT", homeModel.Name)
 	}
 
-	m.Logger.Info("height: ", m.BodyDimensions.Height)
 	welcomeStyle := lipgloss.NewStyle().
 		Foreground(Purple).
 		Bold(true)

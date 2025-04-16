@@ -11,21 +11,66 @@ import (
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
+func Chat(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
+	m.Logger.Infof("in chat ctlr: participants %v", m.Chat.Participants)
+	m.Logger.Infof("in chat ctlr: msgs %v", m.Chat.Messages)
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyEnter:
+			val := m.Chat.Input.Value()
+			if val == "" {
+				return m, nil
+			}
+
+			chatMsg := messages.NewChatMessage(val, m.Chat.Username)
+			m.Logger.Infof("in chat ctlr writing: %v", chatMsg)
+			if err := m.Chat.Conn.WriteJSON(chatMsg); err != nil {
+				m.Logger.Errorf("failed to send chat msg from client: %v", err)
+			}
+
+			m.Chat.Input.Reset()
+			m.Chat.Messages = append(m.Chat.Messages, *chatMsg)
+		case tea.KeyCtrlC:
+			return m, tea.Quit
+		}
+	case messages.WebSocketMessage:
+		m.Logger.Infof("in chat ctlr recieving websocketmsg: %v", msg)
+		return handleWebSocketMessage(m, msg)
+	case messages.WebSocketError:
+		m.Logger.Errorf("websocket err: %v", msg.Err)
+		m.CurrentView = models.LoginPath
+		m.Login.NetworkError = fmt.Sprintf("there was an issue recieving messages in the chat: %v", msg.Err)
+		return m, nil
+	}
+
+	var cmd tea.Cmd
+	m.Chat.Input, cmd = m.Chat.Input.Update(msg)
+	return m, tea.Batch(cmd, ListenForWebSocketMessages(m.Chat.Conn))
+}
+
 func handleWebSocketMessage(m *models.AppModel, websocketMsg messages.WebSocketMessage) (*models.AppModel, tea.Cmd) {
 	var msg messages.Message
+	m.Logger.Infof("in handleWebSocketMessage: %v", m)
+	m.Logger.Infof("Raw WebSocket Message Data: %v", string(websocketMsg.Data))
 	conn := m.Chat.Conn
 	if err := json.Unmarshal(websocketMsg.Data, &msg); err != nil {
 		m.Logger.Errorf("unable to unmarshal websocket msg error: %v", err)
 		return m, ListenForWebSocketMessages(conn)
 	}
-
-	if msg.Type != messages.InitMessageType {
-		// we want to add to history for everything except an init msg
-		m.Chat.Messages = append(m.Chat.Messages, msg)
-	}
+	m.Logger.Infof("Decoded Message: Type=%v, Content=%v, Sender=%v",
+		msg.Type, msg.Content, msg.Sender)
 
 	switch msg.Type {
-	// note: for chat msgs all we want to do is append so we don't have to do anything else here
+	case messages.ChatMessageType:
+		var chatMsg messages.ChatMessage
+		if err := json.Unmarshal([]byte(msg.Content), &chatMsg); err != nil {
+			m.Logger.Errorf("error decoding chat msg: %v", err)
+			m.Logger.Errorf("Problematic content: %v", msg.Content)
+		} else {
+			m.Logger.Infof("Decoded Chat Message: %+v", chatMsg)
+			m.Chat.Messages = append(m.Chat.Messages, msg)
+		}
 	case messages.JoinMessageType:
 		var joinMsg messages.JoinMessage
 		if err := json.Unmarshal([]byte(msg.Content), &joinMsg); err != nil {
@@ -35,6 +80,7 @@ func handleWebSocketMessage(m *models.AppModel, websocketMsg messages.WebSocketM
 				Username: joinMsg.Username,
 				Online:   true,
 			})
+			m.Chat.Messages = append(m.Chat.Messages, msg)
 		}
 	case messages.LeaveMessageType:
 		var leaveMsg messages.LeaveMessage
@@ -47,9 +93,12 @@ func handleWebSocketMessage(m *models.AppModel, websocketMsg messages.WebSocketM
 					break
 				}
 			}
+
+			m.Chat.Messages = append(m.Chat.Messages, msg)
 		}
 	case messages.InitMessageType:
 		var initMsg messages.InitMessage
+		m.Logger.Infof("in init msg: %v", msg)
 
 		if err := json.Unmarshal([]byte(msg.Content), &initMsg); err != nil {
 			log.Errorf("error decoding the init msg:  %v", err)
@@ -61,41 +110,9 @@ func handleWebSocketMessage(m *models.AppModel, websocketMsg messages.WebSocketM
 		m.Logger.Infof("server is shutting down, shutting down app")
 		_ = m.Chat.Conn.Close()
 		return m, tea.Quit
+	default:
+		m.Logger.Infof("unexpected msg: %v", msg)
 	}
 
 	return m, ListenForWebSocketMessages(conn)
-}
-
-func Chat(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
-			val := m.Chat.Input.Value()
-			if val == "" {
-				return m, nil
-			}
-
-			chatMsg := messages.NewChatMessage(val, m.Chat.Username)
-			if err := m.Chat.Conn.WriteJSON(chatMsg); err != nil {
-				m.Logger.Errorf("failed to send chat msg from client: %v", err)
-			}
-
-			m.Chat.Input.Reset()
-			m.Chat.Messages = append(m.Chat.Messages, *chatMsg)
-		case tea.KeyCtrlC:
-			return m, tea.Quit
-		}
-	case messages.WebSocketMessage:
-		return handleWebSocketMessage(m, msg)
-	case messages.WebSocketError:
-		m.Logger.Errorf("websocket err: %v", msg.Err)
-		m.CurrentView = models.LoginPath
-		m.Login.NetworkError = fmt.Sprintf("there was an issue recieving messages in the chat: %v", msg.Err)
-		return m, nil
-	}
-
-	var cmd tea.Cmd
-	m.Chat.Input, cmd = m.Chat.Input.Update(msg)
-	return m, tea.Batch(cmd, ListenForWebSocketMessages(m.Chat.Conn))
 }

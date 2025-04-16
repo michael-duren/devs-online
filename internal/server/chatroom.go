@@ -44,13 +44,14 @@ func (cr *ChatRoom) Run() {
 	for {
 		select {
 		case client := <-cr.register:
+			log.Infof("attemtping to register user: %v", client.username)
 			cr.mutex.Lock()
 			cr.clients[client.conn] = messages.Participant{
 				Username: client.username,
 				Online:   true,
 			}
+			log.Infof("current clients: %v", cr.clients)
 			cr.mutex.Unlock()
-
 			initMsg := messages.NewInitMessage(cr.messages, cr.GetParticipants())
 			if err := client.conn.WriteJSON(initMsg); err != nil {
 				log.Warnf("unable to write to client after joining. error: %v", err)
@@ -59,11 +60,10 @@ func (cr *ChatRoom) Run() {
 				cr.mutex.Unlock()
 				break
 			}
-
+			log.Infof("wrote init msg to client: %v", initMsg)
 			joinMsg := messages.NewJoinMessage(client.username)
 			// keep track of msg history
 			cr.messages = append(cr.messages, *joinMsg)
-
 			// broadcast to clients
 			cr.broadcast <- *joinMsg
 		case webConn := <-cr.unregister:
@@ -71,21 +71,32 @@ func (cr *ChatRoom) Run() {
 			p := cr.clients[webConn]
 			delete(cr.clients, webConn)
 			cr.mutex.Unlock()
-
 			leaveMsg := messages.NewLeaveMessage(
 				p.Username,
 			)
-
 			cr.broadcast <- *leaveMsg
 		case msg := <-cr.broadcast:
+			log.Infof("BROADCAST DETAILS: Type=%v, Content=%v, Sender=%v",
+				msg.Type, msg.Content, msg.Sender)
+			log.Infof("Total messages before broadcast: %d", len(cr.messages))
+
 			cr.mutex.Lock()
+			log.Infof("broadcasting msg: %v to %d clients", msg, len(cr.clients))
+
+			// Add the message to the chat room's message history
+			cr.messages = append(cr.messages, msg)
+
+			log.Infof("Total messages after broadcast: %d", len(cr.messages))
 
 			for c := range cr.clients {
+				log.Infof("Attempting to send message to client")
 				if err := c.WriteJSON(msg); err != nil {
+					log.Errorf("Error writing to client: %v", err)
 					_ = c.Close()
 					delete(cr.clients, c)
 				}
 			}
+			cr.mutex.Unlock()
 		}
 	}
 }
