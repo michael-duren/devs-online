@@ -82,7 +82,7 @@ func (cr *ChatRoom) Run() {
 
 			for c := range cr.clients {
 				if err := c.WriteJSON(msg); err != nil {
-					c.Close()
+					_ = c.Close()
 					delete(cr.clients, c)
 				}
 			}

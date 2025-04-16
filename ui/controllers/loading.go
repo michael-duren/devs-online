@@ -24,8 +24,10 @@ func ListenForWebSocketMessages(conn *websocket.Conn) tea.Cmd {
 }
 
 func Loading(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
+	m.Logger.Info("in loading ctlr")
 	switch msg := msg.(type) {
 	case LoginResult:
+		m.Logger.Info("in login resutl")
 		if msg.conn == nil || msg.err != nil || msg.username == nil {
 			log.Warn("error logging into chat: ", "error: ", msg.err)
 			m.CurrentView = models.LoginPath
@@ -42,6 +44,7 @@ func Loading(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 			m.Logger.Infof("In default : %v\n", msg)
 		}
 	}
+	// m.Logger.Infof("msg: %v", msg)
 	var cmd tea.Cmd
 	m.Loading.Spinner, cmd = m.Loading.Spinner.Update(msg)
 	return m, cmd

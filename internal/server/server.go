@@ -74,7 +74,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		secret := r.URL.Query().Get("secret")
 
 		// TODO: Add logic to put in some secret
-		if secret != "some-secret" {
+		if secret != "secret" {
 			w.WriteHeader(401)
 			return
 		}

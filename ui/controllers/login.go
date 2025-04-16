@@ -18,23 +18,36 @@ type LoginResult struct {
 	err      error
 }
 
-func newLoginResult(conn *websocket.Conn, username *string, err error) *LoginResult {
-	return &LoginResult{
+func newLoginResult(conn *websocket.Conn, username *string, err error) LoginResult {
+	return LoginResult{
 		conn:     conn,
 		username: username,
 		err:      err,
 	}
 }
 
-func connectToChat(creds *messages.Credentials) tea.Cmd {
+func connectToChat(creds *messages.Credentials, logger *log.Logger) tea.Cmd {
+	logger.Infof("in connect to chat with :%v", creds)
 	return func() tea.Msg {
-		path := fmt.Sprintf("/ws?username=%s&secret=%s", creds.Username, creds.Secret)
-		u := url.URL{Scheme: "ws", Host: creds.Address, Path: path}
+		u := url.URL{Scheme: "ws", Host: creds.Address, Path: "/ws"}
+		query := u.Query()
+		query.Set("username", creds.Username)
+		query.Set("secret", creds.Secret)
+		u.RawQuery = query.Encode()
+
+		logger.Infof("executing url: %v", u.String())
 
 		c, res, err := websocket.DefaultDialer.Dial(u.String(), nil)
+		logger.Infof("websocket dialed: got conn: %v, res: %v, err: %v", c, res, err)
+		if res != nil && res.StatusCode < 101 {
+			return newLoginResult(
+				nil,
+				nil,
+				fmt.Errorf("bad handshake recieved %d status code", res.StatusCode),
+			)
+		}
 		if err != nil {
 			log.Info("unable to connect with websocket. res: %v", res)
-			// TODO: check response for reason of not being successful
 			return newLoginResult(
 				nil,
 				nil,
@@ -68,7 +81,7 @@ func Login(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 		)
 		m.Chat.Username = creds.Username
 
-		return m, tea.Batch(m.Loading.Init(), connectToChat(creds))
+		return m, tea.Batch(m.Loading.Init(), connectToChat(creds, m.Logger))
 	}
 
 	return m, tea.Batch(cmds...)
