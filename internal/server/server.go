@@ -8,7 +8,6 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
-	"github.com/michael-duren/tui-chat/messages"
 )
 
 type Server struct {
@@ -23,36 +22,36 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string, chatRoom *ChatRoom) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Errorf("error upgrading request: %v", err)
-		return
-	}
-	client := &Client{username: username, conn: conn}
-	chatRoom.register <- client
-	go func() {
-		defer func() {
-			chatRoom.unregister <- conn
-			_ = conn.Close()
-		}()
-		for {
-			var msg messages.Message
-			log.Infof("Waiting to read message from client")
-			if err := conn.ReadJSON(&msg); err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					log.Warnf("Unexpected close error: %v", err)
-				} else {
-					log.Warnf("Read error: %v", err)
-				}
-				break
-			}
-			log.Infof("RECEIVED CLIENT MESSAGE: Type=%v, Content=%v, Sender=%v",
-				msg.Type, msg.Content, msg.Sender)
-			chatRoom.broadcast <- msg
-		}
-	}()
-}
+// func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string, chatRoom *ChatRoom) {
+// 	conn, err := upgrader.Upgrade(w, r, nil)
+// 	if err != nil {
+// 		log.Errorf("error upgrading request: %v", err)
+// 		return
+// 	}
+// 	client := &Client{username: username, conn: conn}
+// 	chatRoom.register <- client
+// 	go func() {
+// 		defer func() {
+// 			chatRoom.unregister <- conn
+// 			_ = conn.Close()
+// 		}()
+// 		for {
+// 			var msg messages.Message
+// 			log.Infof("Waiting to read message from client")
+// 			if err := conn.ReadJSON(&msg); err != nil {
+// 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+// 					log.Warnf("Unexpected close error: %v", err)
+// 				} else {
+// 					log.Warnf("Read error: %v", err)
+// 				}
+// 				break
+// 			}
+// 			log.Infof("RECEIVED CLIENT MESSAGE: Type=%v, Content=%v, Sender=%v",
+// 				msg.Type, msg.Content, msg.Sender)
+// 			chatRoom.broadcast <- msg
+// 		}
+// 	}()
+// }
 
 func (s *Server) ShutdownSockets() {
 	// set 5 second context for server

@@ -30,7 +30,6 @@ func Chat(m *models.AppModel, msg tea.Msg) (*models.AppModel, tea.Cmd) {
 			}
 
 			m.Chat.Input.Reset()
-			m.Chat.Messages = append(m.Chat.Messages, *chatMsg)
 		case tea.KeyCtrlC:
 			return m, tea.Quit
 		}
@@ -76,11 +75,21 @@ func handleWebSocketMessage(m *models.AppModel, websocketMsg messages.WebSocketM
 		if err := json.Unmarshal([]byte(msg.Content), &joinMsg); err != nil {
 			log.Errorf("error decoding the join msg: %v", err)
 		} else {
-			m.Chat.Participants = append(m.Chat.Participants, messages.Participant{
-				Username: joinMsg.Username,
-				Online:   true,
-			})
-			m.Chat.Messages = append(m.Chat.Messages, msg)
+			userExists := false
+			for _, p := range m.Chat.Participants {
+				if p.Username == joinMsg.Username {
+					userExists = true
+					break
+				}
+			}
+
+			if !userExists {
+				m.Chat.Participants = append(m.Chat.Participants, messages.Participant{
+					Username: joinMsg.Username,
+					Online:   true,
+				})
+				m.Chat.Messages = append(m.Chat.Messages, msg)
+			}
 		}
 	case messages.LeaveMessageType:
 		var leaveMsg messages.LeaveMessage
