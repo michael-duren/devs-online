@@ -12,6 +12,8 @@ import (
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
+const alert = "Alert: "
+
 func Chat(m *models.AppModel) string {
 	chatModel := m.Chat
 
@@ -46,11 +48,37 @@ func Chat(m *models.AppModel) string {
 			s = fmt.Sprintf(
 				"%s (%s): %s",
 				chatMsg.Username,
-				chatMsg.Date.Format(time.Kitchen),
+				msg.Time.Format(time.Kitchen),
 				chatMsg.Message,
 			)
+		case messages.JoinMessageType:
+			var joinMsg messages.JoinMessage
+			if err := json.Unmarshal([]byte(msg.Content), &joinMsg); err != nil {
+				log.Errorf("unable to unmarshal json: %v", err)
+			}
+			s = lipgloss.NewStyle().
+				Foreground(Green).
+				Render(fmt.Sprintf(
+					"%s (%s): %s",
+					alert,
+					msg.Time.Format(time.Kitchen),
+					fmt.Sprintf("%s has joined the chat!", joinMsg.Username),
+				))
+		case messages.LeaveMessageType:
+			var leaveMsg messages.LeaveMessage
+
+			if err := json.Unmarshal([]byte(msg.Content), &leaveMsg); err != nil {
+				log.Errorf("unable to unmarshal json: %v", err)
+			}
+			s = lipgloss.NewStyle().
+				Foreground(Red).
+				Render(fmt.Sprintf(
+					"%s (%s): %s",
+					alert,
+					msg.Time.Format(time.Kitchen),
+					fmt.Sprintf("%s has left the chat", leaveMsg.Username),
+				))
 		}
-		// TODO: Add other cases
 
 		msgs = append(msgs, s)
 	}

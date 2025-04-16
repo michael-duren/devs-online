@@ -2,6 +2,7 @@ package messages
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -16,6 +17,19 @@ const (
 	// TODO: Implement
 	ShutdownMessageType MessageType = "shutdown"
 )
+
+type WebSocketMessage struct {
+	Data []byte
+}
+
+type WebSocketError struct {
+	Address string
+	Err     error
+}
+
+func (e *WebSocketError) Error() string {
+	return fmt.Sprintf("error connecting to %s: error: %v", e.Address, e.Err)
+}
 
 type MessageType string
 
@@ -38,14 +52,12 @@ type Participant struct {
 // The chat message sent by the server
 // or client
 type ChatMessage struct {
-	Date     time.Time
 	Message  string
 	Username string
 }
 
-func NewChatMessage(date time.Time, msg, username string) *Message {
+func NewChatMessage(msg, username string) *Message {
 	chatMsg := ChatMessage{
-		Date:     date,
 		Message:  msg,
 		Username: username,
 	}

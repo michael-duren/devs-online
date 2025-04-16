@@ -1,8 +1,7 @@
 package controllers
 
 import (
-	"encoding/json"
-	"net/http"
+	"fmt"
 	"net/url"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -29,19 +28,10 @@ func newLoginResult(conn *websocket.Conn, username *string, err error) *LoginRes
 
 func connectToChat(creds *messages.Credentials) tea.Cmd {
 	return func() tea.Msg {
-		u := url.URL{Scheme: "ws", Host: creds.Address, Path: "/ws"}
-		credStr, err := json.Marshal(*messages.NewCredentialDto(creds.Username, creds.Secret))
-		authHeader := http.Header{}
-		authHeader.Set("Authorization", string(credStr))
-		if err != nil {
-			return newLoginResult(
-				nil,
-				nil,
-				err,
-			)
-		}
+		path := fmt.Sprintf("/ws?username=%s&secret=%s", creds.Username, creds.Secret)
+		u := url.URL{Scheme: "ws", Host: creds.Address, Path: path}
 
-		c, res, err := websocket.DefaultDialer.Dial(u.String(), authHeader)
+		c, res, err := websocket.DefaultDialer.Dial(u.String(), nil)
 		if err != nil {
 			log.Info("unable to connect with websocket. res: %v", res)
 			// TODO: check response for reason of not being successful

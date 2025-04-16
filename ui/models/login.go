@@ -9,10 +9,11 @@ import (
 )
 
 type LoginModel struct {
-	Address  string
-	Username string
-	Secret   string
-	Form     *huh.Form
+	Address      string
+	Username     string
+	Secret       string
+	Form         *huh.Form
+	NetworkError string
 }
 
 func NewLoginModel() *LoginModel {
