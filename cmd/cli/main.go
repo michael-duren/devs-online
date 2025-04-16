@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -38,18 +37,10 @@ func runServe(external bool, addr string, port int, secret string) {
 
 	if external {
 		addr = "0.0.0.0"
-
-		localIP, err := getLocalIP()
-		if err != nil {
-			logger.Warn("Could not determine local IP address", "error", err)
-		} else {
-			logger.Info(fmt.Sprintf("Your machine's IP address is: %s", localIP))
-			logger.Info(fmt.Sprintf("Others can connect using: %s:%d", localIP, port))
-		}
 	}
 	log.Infof("external: %v, addr: %v", external, addr)
-	logger.Info("server address: ", addr)
-	logger.Info(fmt.Sprintf("server will be available at http://%s:%d", addr, port))
+	log.Info("server address: ", addr)
+	log.Info(fmt.Sprintf("server will be available at http://%s:%d", addr, port))
 
 	server := server.NewServer(port, logger, secret, addr)
 	done := make(chan bool, 1)
@@ -110,19 +101,4 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func getLocalIP() (string, error) {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return "", err
-	}
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String(), nil
-			}
-		}
-	}
-	return "", fmt.Errorf("no non-loopback IPv4 address found")
 }
