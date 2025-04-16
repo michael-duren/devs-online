@@ -1,12 +1,20 @@
 package messages
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+
+	"github.com/charmbracelet/log"
+)
 
 const (
 	ChatMessageType  MessageType = "chat"
 	InitMessageType  MessageType = "init"
 	LeaveMessageType MessageType = "leave"
 	JoinMessageType  MessageType = "join"
+
+	// TODO: Implement
+	ShutdownMessageType MessageType = "shutdown"
 )
 
 type MessageType string
@@ -16,12 +24,11 @@ type MessageType string
 // messages between peers
 type Message struct {
 	Type    MessageType `json:"type"`
-	Content any         `json:"content"`
+	Content string      `json:"content"`
 	Sender  string      `json:"sender,omitempty"`
 	Time    time.Time   `json:"time"`
 }
 
-// Participant
 type Participant struct {
 	Username string
 	Online   bool
@@ -37,15 +44,22 @@ type ChatMessage struct {
 }
 
 func NewChatMessage(date time.Time, msg, username string) *Message {
+	chatMsg := ChatMessage{
+		Date:     date,
+		Message:  msg,
+		Username: username,
+	}
+	encoded, err := json.Marshal(chatMsg)
+	if err != nil {
+		log.Errorf("unable to encode chat msg: %v", err)
+		return nil
+	}
+
 	return &Message{
-		Type: ChatMessageType,
-		Content: ChatMessage{
-			Date:     date,
-			Message:  msg,
-			Username: username,
-		},
-		Sender: username,
-		Time:   time.Now(),
+		Type:    ChatMessageType,
+		Content: string(encoded),
+		Sender:  username,
+		Time:    time.Now(),
 	}
 }
 
@@ -57,13 +71,20 @@ type InitMessage struct {
 }
 
 func NewInitMessage(ch []Message, p []Participant) *Message {
+	initMsg := &InitMessage{
+		ChatHistory:  ch,
+		Participants: p,
+	}
+	encoded, err := json.Marshal(initMsg)
+	if err != nil {
+		log.Errorf("unable to encode chat msg: %v", err)
+		return nil
+	}
+
 	return &Message{
-		Type: InitMessageType,
-		Content: &InitMessage{
-			ChatHistory:  ch,
-			Participants: p,
-		},
-		Time: time.Now(),
+		Type:    InitMessageType,
+		Content: string(encoded),
+		Time:    time.Now(),
 	}
 }
 
@@ -72,12 +93,20 @@ type LeaveMessage struct {
 }
 
 func NewLeaveMessage(username string) *Message {
+	leaveMsg := LeaveMessage{
+		Username: username,
+	}
+
+	encoded, err := json.Marshal(leaveMsg)
+	if err != nil {
+		log.Errorf("unable to encode leave msg: %v", err)
+		return nil
+	}
+
 	return &Message{
-		Type: LeaveMessageType,
-		Content: &LeaveMessage{
-			Username: username,
-		},
-		Time: time.Now(),
+		Type:    LeaveMessageType,
+		Content: string(encoded),
+		Time:    time.Now(),
 	}
 }
 
@@ -86,11 +115,19 @@ type JoinMessage struct {
 }
 
 func NewJoinMessage(username string) *Message {
+	joinMsg := &JoinMessage{
+		Username: username,
+	}
+
+	encoded, err := json.Marshal(joinMsg)
+	if err != nil {
+		log.Errorf("unable to encode join msg: %v", err)
+		return nil
+	}
+
 	return &Message{
-		Type: LeaveMessageType,
-		Content: &JoinMessage{
-			Username: username,
-		},
-		Time: time.Now(),
+		Type:    LeaveMessageType,
+		Content: string(encoded),
+		Time:    time.Now(),
 	}
 }

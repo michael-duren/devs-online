@@ -1,11 +1,14 @@
 package views
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
+	"github.com/michael-duren/tui-chat/messages"
 	"github.com/michael-duren/tui-chat/ui/models"
 )
 
@@ -31,17 +34,27 @@ func Chat(m *models.AppModel) string {
 	messageHeight := m.BodyDimensions.Height - 7
 	inputHeight := 3
 
-	var messages []string
+	var msgs []string
 	for _, msg := range chatModel.Messages {
-		s := fmt.Sprintf(
-			"%s (%s): %s",
-			msg.Username,
-			msg.Date.Format(time.Kitchen),
-			msg.Message,
-		)
-		messages = append(messages, s)
+		var s string
+		switch msg.Type {
+		case messages.ChatMessageType:
+			var chatMsg messages.ChatMessage
+			if err := json.Unmarshal([]byte(msg.Content), &chatMsg); err != nil {
+				log.Errorf("unable to unmarshal json: %v", err)
+			}
+			s = fmt.Sprintf(
+				"%s (%s): %s",
+				chatMsg.Username,
+				chatMsg.Date.Format(time.Kitchen),
+				chatMsg.Message,
+			)
+		}
+		// TODO: Add other cases
+
+		msgs = append(msgs, s)
 	}
-	messageContent := strings.Join(messages, "\n")
+	messageContent := strings.Join(msgs, "\n")
 	if messageContent == "" {
 		messageContent = "No messages yet..."
 	}

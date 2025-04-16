@@ -8,7 +8,7 @@ import (
 )
 
 type ChatModel struct {
-	Messages     []*messages.ChatMessage
+	Messages     []*messages.Message
 	Input        textinput.Model
 	Username     string
 	Participants []messages.Participant
@@ -21,7 +21,7 @@ func NewChatModel() *ChatModel {
 	ti.Focus()
 
 	return &ChatModel{
-		Messages:     make([]*messages.ChatMessage, 0),
+		Messages:     make([]*messages.Message, 0),
 		Input:        ti,
 		Participants: []messages.Participant{},
 	}

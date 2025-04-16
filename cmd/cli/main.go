@@ -29,7 +29,6 @@ func gracefulShutdown(server *server.Server, done chan bool) {
 	<-ctx.Done()
 
 	server.ShutdownSockets()
-
 	done <- true
 }
 
