@@ -1,17 +1,68 @@
-# TUI CHAT
+# Devs Online (DOL)
 
-## Using `websockets` to create a TUI chat app
+> [!WARNING]
+> This software is in early development, things may be broken or change.
 
-This repo is for a meetup presentation.
+## Overview
 
-### Meetup Description
+This terminal chat app is an attempt to replace Discord, Slack, etc
+for developers who want to stay in their terminal and not have a
+separate application for teams or friends.
 
-Go lang methodology is notorious for simplicity and building
-your own tools. In this meetup, we will dive into how `websockets`
-actually work by briefly reviewing the `rfc6455` standard,
-implementing a simple `websocket` with go's `net/http`
-package and then building a TUI chat app with `charmbracelet/bubbletea`.
+If you are a neovim/vim/emacs user the goal is to have this chat
+in your editor.
 
-After this meetup, you will have a better understanding of how `websockets`
-work, how to implement them in go, and create simple applications all
-without touching a front-end framework or the web browser.
+Currently the chat is just kept in memory so when the server shuts
+down the history and room are gone. My next steps are focused
+on authentication and choosing a database solution.
+
+The UI is built using the great collection of packages
+from [charm](https://charm.sh/)
+
+## Quick Start
+
+Clone the repository and run make build. This will
+build the binary as `dol` (Devs Online).
+
+```bash
+make build
+```
+
+Adding it to user binaries
+(Mac Os/Linux)
+
+```bash
+mv ./dol /usr/local/bin
+```
+
+Windows
+
+```powershell
+mv .\dol %USERPROFILE%\bin
+```
+
+Running the chat client
+
+```bash
+dol chat
+```
+
+Running the server
+
+```bash
+# local
+dol serve
+
+# external
+dol serve --external
+```
+
+## Road Map
+
+Check out the [GitHub Issues](https://github.com/michael-duren/tui-chat/issues) for current development plans and progress.
+
+## Contributing
+
+If you want to contribute or have an idea for
+this application please message me or email
+me at `michaeld@michaelduren.com`

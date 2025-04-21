@@ -119,7 +119,6 @@ func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string
 	go client.readPump()
 }
 
-// Update your ChatRoom struct to handle the new Client type
 type ChatRoom struct {
 	// Maps for both client objects and participants
 	clients      map[*websocket.Conn]*Client
@@ -131,7 +130,6 @@ type ChatRoom struct {
 	mutex        sync.Mutex
 }
 
-// Update your NewChatRoom function
 func NewChatRoom() *ChatRoom {
 	return &ChatRoom{
 		clients:      make(map[*websocket.Conn]*Client),
