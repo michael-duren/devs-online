@@ -37,13 +37,23 @@ type Client struct {
 func (c *Client) readPump() {
 	defer func() {
 		c.chatRoom.unregister <- c.conn
-		c.conn.Close()
+		err := c.conn.Close()
+		if err != nil {
+			log.Errorf("error closing client connection that reads from websocket: %v", err)
+		}
 	}()
 
 	c.conn.SetReadLimit(maxMessageSize)
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+		err = c.conn.Close()
+		if err != nil {
+			log.Errorf("error closing client connection that reads from websocket: %v", err)
+		}
+	}
 	c.conn.SetPongHandler(func(string) error {
-		c.conn.SetReadDeadline(time.Now().Add(pongWait))
+		if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+			log.Errorf("error in the pong handler: %v", err)
+		}
 		return nil
 	})
 
@@ -70,16 +80,16 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.conn.Close()
+		_ = c.conn.Close()
 	}()
 
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The chat room closed the channel
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				_ = c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 
@@ -89,7 +99,7 @@ func (c *Client) writePump() {
 			}
 
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
@@ -111,10 +121,8 @@ func (s *Server) serveWs(w http.ResponseWriter, r *http.Request, username string
 		send:     make(chan messages.Message, 256), // Buffered channel
 	}
 
-	// Register with chat room
 	chatRoom.register <- client
 
-	// Start the pumps in new goroutines
 	go client.writePump()
 	go client.readPump()
 }

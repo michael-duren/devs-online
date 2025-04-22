@@ -42,3 +42,5 @@ logs
 example.*
 bin/
 tmp/
+dol
+*dol*
